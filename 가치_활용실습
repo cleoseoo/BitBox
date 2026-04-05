@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital vs Analog Explorer - Falling Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --digital-color: #00f2fe;
+        --analog-color: #ff0844;
+        --bg-color: #0f172a;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Pretendard', sans-serif;
+        background: var(--bg-color);
+        background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        color: white;
+        overflow: hidden;
+        user-select: none;
+    }
+
+    /* 상단 UI */
+    .topbar {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        display: none; 
+        justify-content: space-between;
+        padding: 20px 40px;
+        box-sizing: border-box;
+        font-weight: 800;
+        font-size: 24px;
+        z-index: 100;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .home-btn {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 16px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .home-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .combo-text {
+        color: #fbbf24;
+        font-size: 18px;
+        transition: 0.2s transform;
+    }
+
+    .title {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        text-align: center;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        z-index: 99;
+        pointer-events: none;
+    }
+
+    .game {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        opacity: 0; 
+        transition: opacity 0.5s ease;
+    }
+
+    /* 떨어지는 아이템 (카드) */
+    .card {
+        position: absolute;
+        padding: 15px 25px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        font-weight: 600;
+        font-size: 18px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        will-change: top, left, transform; 
+        z-index: 30;
+    }
+
+    .card.img-card {
+        padding: 10px;
+        font-size: 50px; 
+        border-radius: 20px;
+    }
+
+    .card.carried {
+        transform: scale(1.1);
+        box-shadow: 0 15px 40px rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.8);
+        z-index: 100;
+    }
+
+    /* 폭탄 스타일 */
+    .bomb {
+        position: absolute;
+        font-size: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulseBomb 0.8s infinite alternate;
+        z-index: 40;
+        will-change: top, left, transform; 
+    }
+
+    @keyframes pulseBomb {
+        0% { transform: scale(1); filter: drop-shadow(0 0 5px #ff0844); }
+        100% { transform: scale(1.15); filter: drop-shadow(0 0 15px #ff0844); }
+    }
+
+    /* 플레이어 */
+    .player {
+        position: absolute;
+        width: 70px;
+        height: 70px;
+        background: radial-gradient(circle, #ffffff 0%, #cbd5e1 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        box-shadow: 0 0 30px rgba(255,255,255,0.4);
+        z-index: 50;
+        will-change: left, top;
+        transform: translate(-50%, -50%);
+    }
+
+    /* 구역 */
+    .zone-container {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 150px;
+        display: flex;
+        z-index: 50; 
+    }
+
+    .zone {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        opacity: 0.8;
+        transition: 0.3s;
+    }
+
+    .digital {
+        background: linear-gradient(to top, rgba(0, 242, 254, 0.4), transparent);
+        border-top: 4px solid var(--digital-color);
+        color: var(--digital-color);
+    }
+
+    .analog {
+        background: linear-gradient(to top, rgba(255, 8, 68, 0.4), transparent);
+        border-top: 4px solid var(--analog-color);
+        color: var(--analog-color);
+    }
+
+    .zone.active-d { background: linear-gradient(to top, rgba(0, 242, 254, 0.7), transparent); opacity: 1; }
+    .zone.active-a { background: linear-gradient(to top, rgba(255, 8, 68, 0.7), transparent); opacity: 1; }
+
+    /* 플로팅 텍스트 애니메이션 */
+    .floating-text {
+        position: absolute;
+        font-weight: 900;
+        font-size: 26px;
+        pointer-events: none;
+        animation: floatUp 1s ease-out forwards;
+        z-index: 200;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-60px) scale(1.6); opacity: 0; }
+    }
+
+    /* 화면 흔들림 */
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+    .shake { animation: shake 0.4s; }
+
+    /* 메모창 (게임 설명서) */
+    .memo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        padding: 35px 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.2);
+        font-size: 17px;
+        line-height: 1.8;
+        z-index: 200;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        display: none; 
+    }
+
+    .memo button {
+        margin-top: 25px;
+        border: none;
+        background: white;
+        color: var(--bg-color);
+        padding: 14px 30px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 18px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .memo button:hover { background: #cbd5e1; transform: scale(1.05); }
+
+    /* 모달 오버레이 */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .modal-box {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 24px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.1);
+        transform: translateY(20px) scale(0.95);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 320px;
+    }
+    .modal-overlay.show .modal-box { transform: translateY(0) scale(1); }
+
+    .modal-box h3 { margin: 0 0 15px 0; font-size: 24px; font-weight: 800; color: #f8fafc; letter-spacing: 1px; }
+    .modal-box p { margin: 0 0 30px 0; font-size: 16px; color: #94a3b8; line-height: 1.6; }
+
+    .modal-buttons { display: flex; gap: 15px; justify-content: center; }
+    .modal-buttons button {
+        padding: 12px 28px; border-radius: 12px; font-weight: 700; font-size: 16px;
+        cursor: pointer; transition: all 0.2s; border: none; font-family: inherit;
+    }
+
+    .btn-cancel { background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+    .btn-cancel:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+
+    .btn-confirm { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: white; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); }
+    .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5); }
+    
+    .btn-analog { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: white; box-shadow: 0 4px 15px rgba(255, 8, 68, 0.3); }
+    .btn-analog:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 8, 68, 0.5); }
+</style>
+</head>
+<body>
+
+<div id="quiz-modal" class="modal-overlay show">
+    <div class="modal-box" id="quiz-box">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:white; background:var(--analog-color); border-radius:50%; padding:15px; margin-bottom:20px; box-shadow: 0 10px 25px rgba(255,8,68,0.4);">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <h3>게임 접속 보안 퀴즈</h3>
+        <p style="font-size: 18px; color: white;">사진 속 바늘 시계는<br>어떤 데이터 형식일까요?</p>
+        <div class="modal-buttons">
+            <button class="btn-confirm" onclick="checkQuiz('digital')">디지털</button>
+            <button class="btn-analog" onclick="checkQuiz('analog')">아날로그</button>
+        </div>
+        <p id="quiz-error" style="color: #ff0844; margin-top: 20px; margin-bottom: 0; font-weight: 800; font-size: 18px; display: none;">땡! 다시 생각해보세요. 😅</p>
+    </div>
+</div>
+
+<div class="topbar" id="topbar">
+    <div style="display:flex; align-items:flex-start; gap:20px;">
+        <button class="home-btn" onclick="openModal()">🏠 게임 초기화</button>
+        <div>SCORE: <span id="score">0</span> <br><span class="combo-text" id="combo"></span></div>
+    </div>
+    <div>⏱ <span id="time">60</span>s</div>
+</div>
+
+<div class="title">Digital vs Analog</div>
+
+<div class="memo" id="memo">
+    🕹️ <b>게임 방법</b><br><br>
+    방향키(←→↑↓)로 로봇을 이동해 하늘에서 떨어지는 아이템을 잡아주세요.<br>
+    알맞은 구역으로 가져가면 점수를 획득합니다!<br>
+    <br>
+    <span style="color:#fbbf24; font-weight:900; font-size:18px;">🔥 콤보 달성 시 2의 지수승(2배씩)으로 점수가 폭발합니다!</span><br>
+    <span style="color:#ff0844; font-weight:900; font-size:18px;">⚠️ 폭탄에 닿으면 현재 점수의 2배가 감점되니 조심하세요!</span><br>
+    <br>
+    <button onclick="startGame()">도전 시작!</button>
+</div>
+
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>게임 초기화</h3>
+        <p>진행 중인 게임이 초기화됩니다.<br>처음으로 돌아가시겠습니까?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeModal()">취소</button>
+            <button class="btn-confirm" onclick="confirmGoHome()">확인</button>
+        </div>
+    </div>
+</div>
+
+<div class="game" id="game">
+    <div class="player" id="player">🤖</div>
+    
+    <div class="zone-container">
+        <div class="zone digital" id="zone-digital">DIGITAL</div>
+        <div class="zone analog" id="zone-analog">ANALOG</div>
+    </div>
+</div>
+
+<script>
+const originalData = [
+    {name:"스마트폰", type:"digital"}, {name:"CCTV", type:"digital"}, {name:"GPS", type:"digital"},
+    {name:"USB", type:"digital"}, {name:"자율주행", type:"digital"}, {name:"클라우드", type:"digital"},
+    {name:"💻", type:"digital", isImg: true}, {name:"📱", type:"digital", isImg: true}, {name:"⌚", type:"digital", isImg: true}, 
+    {name:"LP판", type:"analog"}, {name:"종이책", type:"analog"}, {name:"손편지", type:"analog"},
+    {name:"필름카메라", type:"analog"}, {name:"카세트테이프", type:"analog"}, {name:"만년필", type:"analog"},
+    {name:"🕰️", type:"analog", isImg: true}, {name:"🌡️", type:"analog", isImg: true}, {name:"📻", type:"analog", isImg: true} 
+];
+
+let game = document.getElementById("game");
+let player = document.getElementById("player");
+let scoreEl = document.getElementById("score");
+let comboEl = document.getElementById("combo");
+let timeEl = document.getElementById("time");
+
+let score = 0;
+let combo = 0;
+let time = 60;
+let isPlaying = false;
+let timerInterval;
+
+// 플레이어 상태
+let pX = window.innerWidth / 2;
+let pY = window.innerHeight / 2;
+let speed = 8;
+let keys = {};
+let carriedCard = null;
+let cards = []; 
+
+// 키보드 리스너
+window.addEventListener("keydown", (e) => { keys[e.code] = true; });
+window.addEventListener("keyup", (e) => { keys[e.code] = false; });
+
+function checkQuiz(answer) {
+    if(answer === 'analog') {
+        document.getElementById('quiz-modal').classList.remove('show');
+        setTimeout(() => {
+            document.getElementById('quiz-modal').style.display = 'none';
+            document.getElementById('topbar').style.display = 'flex';
+            document.getElementById('game').style.opacity = '1';
+            document.getElementById('memo').style.display = 'block';
+        }, 300);
+    } else {
+        const quizBox = document.getElementById('quiz-box');
+        const errorMsg = document.getElementById('quiz-error');
+        errorMsg.style.display = 'block';
+        quizBox.classList.add('shake');
+        setTimeout(() => { quizBox.classList.remove('shake'); }, 400);
+        setTimeout(() => { errorMsg.style.display = 'none'; }, 2000);
+    }
+}
+
+function openModal() {
+    isPlaying = false; 
+    const modal = document.getElementById('custom-modal');
+    modal.style.display = 'flex';
+    void modal.offsetWidth; 
+    modal.classList.add('show');
+}
+
+function closeModal() {
+    const modal = document.getElementById('custom-modal');
+    modal.classList.remove('show');
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        if (time > 0 && document.getElementById("memo").style.display === "none") {
+            isPlaying = true;
+            requestAnimationFrame(gameLoop);
+        }
+    }, 300);
+}
+
+function confirmGoHome() { location.reload(); }
+
+function startGame() {
+    document.getElementById("memo").style.display = "none";
+    if(!isPlaying) {
+        isPlaying = true;
+        spawnCards(8); 
+        requestAnimationFrame(gameLoop);
+        timerInterval = setInterval(updateTime, 1000);
+    }
+}
+
+// 아이템 생성
+function createCard(isInitial = false) {
+    let el = document.createElement("div");
+    let isBomb = Math.random() < 0.2;
+
+    if(isBomb) {
+        el.className = "bomb";
+        el.innerText = "💣";
+        el.dataset.type = "bomb";
+    } else {
+        let item = originalData[Math.floor(Math.random() * originalData.length)];
+        el.className = "card";
+        el.innerText = item.name;
+        el.dataset.type = item.type;
+        if(item.isImg) el.classList.add("img-card");
+    }
+    
+    let startX = 50 + Math.random() * (window.innerWidth - 150);
+    let startY = isInitial ? (Math.random() * (window.innerHeight - 300)) : (-Math.random() * 200 - 100);
+    
+    el.style.left = startX + "px";
+    el.style.top = startY + "px";
+    
+    el.dataset.y = startY;
+    el.dataset.vy = Math.random() * 1.5 + 1.2; 
+    
+    game.appendChild(el);
+    return el;
+}
+
+function spawnCards(count) {
+    for(let i=0; i<count; i++) cards.push(createCard(true)); 
+}
+
+function showFloatingText(text, x, y, color) {
+    let el = document.createElement("div");
+    el.className = "floating-text";
+    el.innerText = text;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.color = color;
+    game.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+}
+
+// 메인 루프
+function gameLoop() {
+    if(!isPlaying) return;
+
+    if (keys["ArrowLeft"]) pX -= speed;
+    if (keys["ArrowRight"]) pX += speed;
+    if (keys["ArrowUp"]) pY -= speed;
+    if (keys["ArrowDown"]) pY += speed;
+
+    pX = Math.max(35, Math.min(window.innerWidth - 35, pX));
+    pY = Math.max(35, Math.min(window.innerHeight - 35, pY));
+
+    player.style.left = pX + "px";
+    player.style.top = pY + "px";
+
+    let pRect = player.getBoundingClientRect();
+
+    // 낙하 처리
+    for (let i = 0; i < cards.length; i++) {
+        let card = cards[i];
+        if (card !== carriedCard) {
+            let y = parseFloat(card.dataset.y) + parseFloat(card.dataset.vy);
+            card.dataset.y = y;
+            card.style.top = y + "px";
+
+            // 바닥 지나면 리스폰
+            if (y > window.innerHeight + 50) {
+                card.remove();
+                cards.splice(i, 1);
+                i--;
+                cards.push(createCard(false));
+            }
+        }
+    }
+
+    // 아이템 충돌 판정
+    if (!carriedCard) {
+        for (let i = 0; i < cards.length; i++) {
+            let card = cards[i];
+            let cRect = card.getBoundingClientRect();
+            
+            if (pRect.left < cRect.right && pRect.right > cRect.left &&
+                pRect.top < cRect.bottom && pRect.bottom > cRect.top) {
+                
+                // ⭐ 폭탄 충돌 시: 점수의 2배 감점
+                if(card.dataset.type === "bomb") {
+                    let penalty = Math.max(20, score * 2); // 0점 이하일 때도 기본 20점 깎이도록 방어코드
+                    score -= penalty;
+                    combo = 0;
+                    
+                    comboEl.innerText = "";
+                    scoreEl.innerText = score;
+                    showFloatingText(`-${penalty}`, pX, pY - 80, "#ff0844");
+                    
+                    document.body.classList.add("shake");
+                    setTimeout(() => document.body.classList.remove("shake"), 400);
+
+                    card.remove();
+                    cards.splice(i, 1);
+                    cards.push(createCard(false)); 
+                    break;
+                } else {
+                    carriedCard = card;
+                    card.classList.add("carried");
+                    break;
+                }
+            }
+        }
+    }
+
+    if (carriedCard) {
+        carriedCard.style.left = (pX - carriedCard.offsetWidth/2) + "px";
+        carriedCard.style.top = (pY - carriedCard.offsetHeight/2 - 50) + "px";
+    }
+
+    let zoneHeight = 150;
+    let inZone = (pY > window.innerHeight - zoneHeight);
+    
+    let digitalZone = document.getElementById("zone-digital");
+    let analogZone = document.getElementById("zone-analog");
+
+    digitalZone.classList.remove("active-d");
+    analogZone.classList.remove("active-a");
+
+    if (inZone) {
+        let currentZone = (pX < window.innerWidth / 2) ? "digital" : "analog";
+        
+        if(currentZone === "digital") digitalZone.classList.add("active-d");
+        else analogZone.classList.add("active-a");
+
+        if (carriedCard) {
+            let isCorrect = (carriedCard.dataset.type === currentZone);
+            
+            if (isCorrect) {
+                combo++;
+                // ⭐ 콤보 계산: 10 * 2^(combo-1) (10, 20, 40, 80...)
+                let earned = 10 * Math.pow(2, combo - 1); 
+                score += earned;
+                
+                comboEl.innerText = combo > 1 ? `${combo} COMBO! 🔥` : "";
+                showFloatingText(`+${earned}`, pX, pY - 80, "#4ade80");
+            } else {
+                combo = 0;
+                score -= 10;
+                comboEl.innerText = "";
+                showFloatingText("-10", pX, pY - 80, "#f87171");
+                document.body.classList.add("shake");
+                setTimeout(() => document.body.classList.remove("shake"), 400);
+            }
+
+            scoreEl.innerText = score;
+            
+            carriedCard.remove();
+            cards = cards.filter(c => c !== carriedCard);
+            carriedCard = null;
+            cards.push(createCard(false)); 
+        }
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function updateTime() {
+    if(!isPlaying) return; 
+    time--;
+    timeEl.innerText = time;
+    if(time <= 0) {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        setTimeout(() => {
+            alert(`게임 종료! 최종 점수: ${score}점\n최고의 플레이였습니다! 👏`);
+            location.reload();
+        }, 100);
+    }
+}
+</script>
+</body>
+</html>
