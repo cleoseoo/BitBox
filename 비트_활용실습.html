@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Evolution: 0과 1의 진화</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --neon-blue: #00f2fe;
+        --neon-purple: #4facfe;
+        --bg-color: #050505;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Pretendard', sans-serif;
+        background-color: var(--bg-color);
+        color: white;
+        overflow: hidden;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+
+    /* 시작 설명서 모달 */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: linear-gradient(135deg, #111, #1a1a2e);
+        border: 1px solid var(--neon-blue);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 500px;
+        box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        text-align: center;
+    }
+
+    .modal-box h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-blue);
+        font-size: 28px;
+        margin-top: 0;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+    }
+
+    .modal-box ul {
+        text-align: left;
+        color: #ccc;
+        font-size: 16px;
+        line-height: 1.8;
+        padding-left: 20px;
+        margin-bottom: 30px;
+    }
+
+    .modal-box li b { color: white; }
+
+    .start-btn {
+        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+        color: #000;
+        font-weight: 900;
+        font-size: 18px;
+        padding: 12px 40px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .start-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+    }
+
+    /* 제목 및 설명 영역 */
+    .header {
+        position: absolute;
+        top: 40px;
+        text-align: center;
+        z-index: 10;
+        transition: opacity 0.5s;
+        display: none; /* 시작 전 숨김 */
+    }
+
+    .title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 32px;
+        font-weight: 900;
+        background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+        color: #aaa;
+        font-weight: 400;
+        letter-spacing: 1px;
+    }
+
+    /* 스테이지 컨테이너 */
+    .stage {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        animation: fadeIn 0.8s ease-out;
+        z-index: 5;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .stage.active { display: flex; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Stage 1: 1 Bit --- */
+    #stage1 { cursor: pointer; } 
+    
+    .switch-btn {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: #111;
+        border: 4px solid #333;
+        color: #555;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 60px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        pointer-events: none; 
+    }
+
+    .switch-btn.on {
+        background: rgba(0, 242, 254, 0.1);
+        border-color: var(--neon-blue);
+        color: var(--neon-blue);
+        box-shadow: 0 0 50px rgba(0, 242, 254, 0.5), inset 0 0 30px rgba(0, 242, 254, 0.2);
+        text-shadow: 0 0 20px var(--neon-blue);
+    }
+
+    /* --- Stage 2: 1 Byte (8 Bits) --- */
+    .byte-container { display: flex; gap: 15px; margin-bottom: 30px; }
+    .bit-slot {
+        width: 50px; height: 70px;
+        border-bottom: 3px solid #333;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 40px; font-weight: 700;
+        display: flex; align-items: flex-end; justify-content: center;
+        color: var(--neon-blue);
+    }
+
+    .byte-result {
+        font-size: 80px; font-weight: 900; color: #fff;
+        text-shadow: 0 0 30px #fff;
+        opacity: 0; transform: scale(0.5);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .byte-result.show { opacity: 1; transform: scale(1); }
+
+    /* --- Stage 3: 64 Bits (Pixel Art) --- */
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(8, 40px);
+        grid-template-rows: repeat(8, 40px);
+        gap: 2px; background: #111; padding: 5px;
+        border: 2px solid #333; border-radius: 10px;
+    }
+    .pixel {
+        width: 40px; height: 40px; background: #000;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: #333; cursor: pointer; transition: 0.2s;
+        font-family: 'Orbitron', monospace;
+    }
+    .pixel.filled {
+        background: #ff0844; color: transparent; box-shadow: 0 0 10px #ff0844;
+    }
+
+    /* --- Stage 4: Millions of Bits --- */
+    .big-data-btn {
+        padding: 20px 40px; font-size: 24px; font-weight: 900;
+        color: #050505;
+        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        border: none; border-radius: 50px; cursor: pointer;
+        box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+        transition: 0.3s; animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.5); }
+        50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(0, 242, 254, 0.8); }
+        100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.5); }
+    }
+    .big-data-btn:active { transform: scale(0.95); }
+
+    /* 최종 연출 */
+    #final-bg {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+        background-size: cover; background-position: center;
+        opacity: 0; z-index: 1; transition: opacity 3s ease-in-out;
+    }
+    #matrix-canvas {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: 2; opacity: 0; transition: opacity 1s; pointer-events: none;
+    }
+    .final-message {
+        position: absolute; z-index: 10; text-align: center;
+        opacity: 0; transition: opacity 2s; background: rgba(0,0,0,0.7);
+        padding: 40px; border-radius: 20px; backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* 공통 다음 버튼 */
+    .next-btn {
+        margin-top: 40px; padding: 12px 30px; font-size: 16px; font-weight: 700;
+        color: white; background: transparent; border: 2px solid white;
+        border-radius: 8px; cursor: pointer; opacity: 0; pointer-events: none;
+        transition: 0.3s; z-index: 50;
+    }
+    .next-btn.show { opacity: 1; pointer-events: auto; }
+    .next-btn:hover { background: white; color: black; }
+
+</style>
+</head>
+<body>
+
+<div id="manual-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h2>📖 게임 설명서</h2>
+        <p style="color:white; font-size:18px; margin-bottom: 20px;">단 1개의 비트가 거대한 우주가 되는 과정을 체험하세요.</p>
+        <ul>
+            <li><b>1단계 (1 Bit):</b> 마우스를 클릭하거나 <b>스페이스바 / 엔터키</b>를 눌러 스위치(0과 1)를 켭니다.</li>
+            <li><b>2단계 (1 Byte):</b> 키보드 <b>숫자키 [0]</b> 과 <b>[1]</b> 을 8번 입력해 문자를 창조합니다.</li>
+            <li><b>3단계 (64 Bits):</b> 화면 중앙의 검은 타일 위로 <b>마우스를 문질러</b> 픽셀 그림을 완성합니다.</li>
+            <li><b>최종 단계:</b> 수천만 개의 데이터를 폭발시켜 세상의 본질을 목격하세요.</li>
+        </ul>
+        <button class="start-btn" onclick="startGame()">시스템 가동</button>
+    </div>
+</div>
+
+<div id="final-bg"></div>
+<canvas id="matrix-canvas"></canvas>
+
+<div class="header" id="header">
+    <div class="title">DATA EVOLUTION</div>
+    <div class="subtitle" id="subtitle">1단계: 탄생 (1 Bit)</div>
+</div>
+
+<div class="stage" id="stage1">
+    <p style="margin-bottom: 30px; font-size: 18px; color: #ccc;">가장 작은 정보의 단위, 1비트입니다.<br>화면을 <b>클릭</b>하거나 <b>스페이스바/엔터키</b>를 눌러보세요.</p>
+    <div class="switch-btn" id="s1-btn">0</div>
+    <p id="s1-text" style="margin-top:30px; color:var(--neon-blue); opacity:0; transition:0.5s;">1비트는 단 두 가지 상태(꺼짐/켜짐)만 표현할 수 있습니다.</p>
+    <button class="next-btn" id="s1-next" onclick="goStage(2)">진화하기 →</button>
+</div>
+
+<div class="stage" id="stage2">
+    <p style="margin-bottom: 30px; font-size: 18px; color: #ccc;">비트 8개가 모이면 1바이트(Byte)가 됩니다.<br>키보드 <b>숫자 0</b> 과 <b>1</b> 을 자유롭게 8번 눌러보세요.</p>
+    <div class="byte-container" id="s2-slots"></div>
+    <div class="byte-result" id="s2-result">A</div>
+    <p id="s2-text" style="margin-top:20px; color:var(--neon-blue); opacity:0; transition:0.5s;">8개의 0과 1이 결합하여 '하나의 문자'가 탄생했습니다!</p>
+    <button class="next-btn" id="s2-next" onclick="goStage(3)">진화하기 →</button>
+</div>
+
+<div class="stage" id="stage3">
+    <p style="margin-bottom: 20px; font-size: 18px; color: #ccc;">64개의 비트(8x8)가 모였습니다.<br>검은 타일(0) 위로 <b>마우스를 문질러</b> 빛(1)으로 채워보세요.</p>
+    <div class="grid-container" id="s3-grid"></div>
+    <p id="s3-text" style="margin-top:20px; color:var(--neon-blue); opacity:0; transition:0.5s;">비트가 모여 면(Pixel)을 이루고, 하나의 의미 있는 '그림'이 되었습니다.</p>
+    <button class="next-btn" id="s3-next" onclick="goStage(4)">궁극의 진화 →</button>
+</div>
+
+<div class="stage" id="stage4">
+    <p style="margin-bottom: 40px; font-size: 20px; color: #ccc; line-height: 1.6;">단순한 문자와 작은 그림을 넘어,<br>수천만 개의 비트가 폭발적으로 모이면 어떤 일이 일어날까요?</p>
+    <button class="big-data-btn" onclick="triggerBigBang()">초거대 데이터 다운로드 (1GB)</button>
+</div>
+
+<div class="final-message" id="final-msg" style="display:none;">
+    <h1 style="font-size: 40px; margin-bottom: 20px; color: white;">우리가 보는 세상의 본질</h1>
+    <p style="font-size: 20px; color: #ddd; line-height: 1.8;">
+        고화질의 우주 사진, 여러분이 매일 보는 유튜브 영상,<br>
+        그리고 사람과 대화하는 인공지능(AI)까지.<br><br>
+        이토록 복잡하고 거대한 디지털 세상도 결국 쪼개고 쪼개면<br>
+        여러분이 방금까지 입력했던 <b style="color:var(--neon-blue);">0과 1의 무한한 반복</b>일 뿐입니다.
+    </p>
+    <button class="next-btn show" style="margin-top: 30px;" onclick="location.reload()">다시 체험하기</button>
+</div>
+
+<script>
+    let currentStage = 0;
+    let isGameActive = false;
+
+    // 게임 시작 함수
+    function startGame() {
+        document.getElementById('manual-modal').style.display = 'none';
+        document.getElementById('header').style.display = 'block';
+        isGameActive = true;
+        goStage(1);
+    }
+
+    function goStage(num) {
+        document.querySelectorAll('.stage').forEach(el => el.classList.remove('active'));
+        document.getElementById(`stage${num}`).classList.add('active');
+        currentStage = num;
+
+        let subtitles = [
+            "1단계: 탄생 (1 Bit)",
+            "2단계: 문자 (8 Bits = 1 Byte)",
+            "3단계: 이미지 (64 Bits)",
+            "최종 단계: 빅뱅 (수천만 Bits)"
+        ];
+        document.getElementById('subtitle').innerText = subtitles[num-1];
+
+        if(num === 2) initStage2();
+        if(num === 3) initStage3();
+    }
+
+    // --- Stage 1 로직 (클릭 & 키보드 모두 지원) ---
+    function toggleBit() {
+        if (currentStage !== 1) return;
+        let btn = document.getElementById('s1-btn');
+        if(btn.innerText === "0") {
+            btn.innerText = "1";
+            btn.classList.add('on');
+            document.body.style.backgroundColor = "#0a192f";
+            document.getElementById('s1-text').style.opacity = 1;
+            document.getElementById('s1-next').classList.add('show');
+        } else {
+            btn.innerText = "0";
+            btn.classList.remove('on');
+            // 이전 코드에서 오류가 났던 부분 (따옴표 추가로 해결)
+            document.body.style.backgroundColor = "var(--bg-color)";
+        }
+    }
+
+    // 1단계 화면 전체 클릭 이벤트
+    document.getElementById('stage1').addEventListener('click', (e) => {
+        // '다음' 버튼을 클릭한 경우는 무시
+        if(e.target.tagName !== 'BUTTON') {
+            toggleBit();
+        }
+    });
+
+    // 전역 키보드 이벤트 (1단계 스페이스/엔터, 2단계 0/1 입력)
+    window.addEventListener('keydown', (e) => {
+        if (!isGameActive) return;
+
+        // 1단계: 스페이스바 또는 엔터
+        if (currentStage === 1) {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault(); // 스페이스바로 스크롤 내려가는 현상 방지
+                toggleBit();
+            }
+        }
+        
+        // 2단계: 숫자 0과 1
+        if (currentStage === 2) {
+            handleByteInput(e);
+        }
+    });
+
+    // --- Stage 2 로직 ---
+    let byteInput = "";
+    function initStage2() {
+        byteInput = "";
+        let container = document.getElementById('s2-slots');
+        container.innerHTML = "";
+        for(let i=0; i<8; i++) {
+            let slot = document.createElement('div');
+            slot.className = 'bit-slot';
+            slot.innerText = "_";
+            container.appendChild(slot);
+        }
+    }
+
+    function handleByteInput(e) {
+        if((e.key === "0" || e.key === "1") && byteInput.length < 8) {
+            byteInput += e.key;
+            let slots = document.querySelectorAll('.bit-slot');
+            slots[byteInput.length - 1].innerText = e.key;
+
+            if(byteInput.length === 8) {
+                setTimeout(() => {
+                    document.getElementById('s2-slots').style.display = 'none';
+                    document.getElementById('s2-result').classList.add('show');
+                    document.getElementById('s2-text').style.opacity = 1;
+                    document.getElementById('s2-next').classList.add('show');
+                }, 300);
+            }
+        }
+    }
+
+    // --- Stage 3 로직 ---
+    const heartPattern = [
+        0,1,1,0,0,1,1,0,
+        1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,
+        0,1,1,1,1,1,1,0,
+        0,0,1,1,1,1,0,0,
+        0,0,0,1,1,0,0,0,
+        0,0,0,0,0,0,0,0
+    ];
+    let pixelsFilled = 0;
+    let targetPixels = heartPattern.filter(x => x === 1).length;
+
+    function initStage3() {
+        let grid = document.getElementById('s3-grid');
+        grid.innerHTML = "";
+        pixelsFilled = 0;
+
+        for(let i=0; i<64; i++) {
+            let px = document.createElement('div');
+            px.className = 'pixel';
+            px.innerText = "0";
+            
+            px.addEventListener('mouseover', (e) => fillPixel(e, i, px));
+            px.addEventListener('touchmove', (e) => {
+                let touch = e.touches[0];
+                let el = document.elementFromPoint(touch.clientX, touch.clientY);
+                if(el && el.classList.contains('pixel') && !el.classList.contains('filled')) {
+                    let idx = Array.from(grid.children).indexOf(el);
+                    fillPixel(null, idx, el);
+                }
+            });
+
+            grid.appendChild(px);
+        }
+    }
+
+    function fillPixel(e, index, el) {
+        if(el.classList.contains('filled')) return;
+
+        if(heartPattern[index] === 1) {
+            el.classList.add('filled');
+            el.innerText = "1";
+            pixelsFilled++;
+
+            if(pixelsFilled >= targetPixels) {
+                document.querySelectorAll('.pixel:not(.filled)').forEach(p => p.style.opacity = 0.2);
+                document.getElementById('s3-text').style.opacity = 1;
+                document.getElementById('s3-next').classList.add('show');
+            }
+        }
+    }
+
+    // --- Stage 4 로직 (Big Bang) ---
+    function triggerBigBang() {
+        document.getElementById('header').style.opacity = 0;
+        document.getElementById('stage4').style.display = 'none';
+        
+        const mCanvas = document.getElementById('matrix-canvas');
+        mCanvas.style.opacity = 1;
+        startMatrixRain(mCanvas);
+
+        setTimeout(() => {
+            mCanvas.style.opacity = 0;
+            document.getElementById('final-bg').style.opacity = 1;
+            
+            setTimeout(() => {
+                let msg = document.getElementById('final-msg');
+                msg.style.display = 'block';
+                void msg.offsetWidth;
+                msg.style.opacity = 1;
+            }, 1000);
+        }, 3000);
+    }
+
+    function startMatrixRain(canvas) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "01";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for(let x = 0; x < columns; x++) drops[x] = 1;
+
+        let matrixInterval = setInterval(() => {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00f2fe";
+            ctx.font = fontSize + "px 'Orbitron'";
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }, 30);
+
+        setTimeout(() => clearInterval(matrixInterval), 4000);
+    }
+</script>
+</body>
+</html>
