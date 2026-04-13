@@ -728,6 +728,13 @@
         }
 
         function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+window.onload = function() {
+            const wordBank = document.querySelector('.word-bank');
+            // 자식 요소(word-item)들을 무작위 순서로 다시 배치합니다.
+            for (let i = wordBank.children.length; i >= 0; i--) {
+                wordBank.appendChild(wordBank.children[Math.random() * i | 0]);
+            }
+        };
 
     </script>
 </body>
