@@ -345,10 +345,12 @@
         }
         
         .memo-section, .reflection-section { 
+            /* 🔥 깊고 진한 청록색 베이스 오버레이 (초록색 추가) */
             background: linear-gradient(135deg, rgba(15, 118, 110, 0.9) 0%, rgba(13, 148, 136, 0.75) 100%); 
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            /* 💧 블러 강도 대폭 완화 (블러 삭제/축소) */
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
             border-radius: 28px 0 0 28px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.2); /* 은은한 테두리 */
             border-right: none; 
             padding: 25px 30px 25px 25px; 
             display: flex; flex-direction: column; 
@@ -358,19 +360,36 @@
         .memo-section { flex: 0.55; }
         .reflection-section { flex: 0.45; }
         
+        /* 🔥 제목 색상: 배경이 어두워졌으므로 밝게 수정 */
+        .sidebar-title {
+            font-weight: 900; 
+            color: #f8fafc; 
+            margin-bottom: 12px; 
+            font-size: 1.05rem;
+        }
+
         .memo-area { 
             flex: 1; border: none; background: transparent; resize: none; font-size: 0.95rem; line-height: 1.8; outline: none; 
+            /* 🔥 가로선: 어두운 배경에 맞춘 은은한 밝은 선 */
             background-image: linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px); 
             background-size: 100% 1.8rem; cursor: text !important; font-family: 'Pretendard', sans-serif;
+            /* 🔥 글자색: 밝은 Off-white */
             color: #f8fafc; font-weight: 600; 
         }
         .reflection-area { 
-            flex: 1; border: 1px solid rgba(255,255,255,0.3); border-radius: 14px; background: rgba(255,255,255,0.1); 
+            flex: 1; border: 1px solid rgba(255,255,255,0.3); border-radius: 14px; 
+            /* 🔥 깊은 청록색 배경 */
+            background: rgba(255,255,255,0.1); 
             resize: none; padding: 15px; font-size: 0.9rem; line-height: 1.6; outline: none; margin-bottom: 12px; cursor: text !important; font-family: 'Pretendard', sans-serif; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-            transition: 0.3s; font-weight: 600; color: #f8fafc;
+            transition: 0.3s; 
+            /* 🔥 글자색: 밝은 Off-white */
+            font-weight: 600; color: #f8fafc;
         }
+        /* 🔥 포커스 시 테두리와 배경색 조정 */
         .reflection-area:focus { background: rgba(255,255,255,0.2); border-color: var(--gold-light); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3); }
+
+        /* 🔥 팁 박스: 다크 모드 스타일로 반전 */
         .capture-tip { 
             font-size: 0.75rem; color: var(--gold-light); font-weight: 800; background: rgba(0,0,0,0.2); 
             padding: 8px; border-radius: 10px; border: 1px dashed var(--gold-light); text-align: center; 
@@ -379,6 +398,7 @@
         /* ⭐ 메모장 및 소감문 안내 문구(플레이스홀더) 색상 수정 */
         .memo-area::placeholder, 
         .reflection-area::placeholder {
+            /* 밝은 회색 플레이스홀더 */
             color: #e2e8f0; 
             opacity: 0.8; 
         }
@@ -539,11 +559,11 @@
 
         <aside class="sidebar-right">
             <div class="memo-section">
-                <div style="font-weight:900; color:#f8fafc; margin-bottom:12px; font-size:1.05rem;">📌 학습 메모장</div>
+                <div class="sidebar-title">📌 학습 메모장</div>
                 <textarea class="memo-area" placeholder="중요한 내용을 기록하세요. 궁금한 사항은 기록하고 질문하세요."></textarea>
             </div>
             <div class="reflection-section">
-                <div style="font-weight:900; color:#f8fafc; margin-bottom:12px; font-size:1.05rem;">🌿 학습 활동 소감</div>
+                <div class="sidebar-title">🌿 학습 활동 소감</div>
                 <textarea class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
                 <div class="capture-tip">📸 캡처: Win+Shift+S | Mac: Cmd+Shift+4</div>
             </div>
