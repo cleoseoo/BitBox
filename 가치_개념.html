@@ -387,7 +387,7 @@
             vertical-align: middle; 
         }
 
-        /* ⭐ 사이드바 - 분석된 가치 파일 느낌의 아주 맑은 파스텔 민트 유리 질감 이식 */
+        /* ⭐ 사이드바 - 배경 톤 및 소감문 영역 시인성 강화 */
         .sidebar-right { 
             width: 360px; display: flex; flex-direction: column; flex-shrink: 0; 
             padding: 30px 0 35px 20px; 
@@ -396,21 +396,19 @@
         }
         
         .memo-section, .reflection-section { 
-            /* 가치 파일과 완벽히 동일한 연한 민트/파스텔 그라데이션 */
-            background: linear-gradient(135deg, rgba(204, 251, 241, 0.65) 0%, rgba(255, 255, 255, 0.8) 100%); 
+            background: rgba(204, 251, 241, 0.65); 
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-radius: 28px 0 0 28px; 
             border: 1px solid rgba(255, 255, 255, 0.7); 
             border-right: none; 
             padding: 25px 30px 25px 25px; 
             display: flex; flex-direction: column; 
-            box-shadow: inset 2px 2px 8px rgba(255,255,255,0.6), -10px 10px 30px rgba(15, 118, 110, 0.08); 
+            box-shadow: inset 2px 2px 8px rgba(255,255,255,0.6), -10px 10px 30px rgba(15, 118, 110, 0.15); 
         }
         
         .memo-section { flex: 0.55; }
         .reflection-section { flex: 0.45; }
         
-        /* 제목 (소리 파일 스타일: #1e1e2f 다크 네이비, 900) */
         .sidebar-title {
             font-weight: 900; 
             color: #1e1e2f; 
@@ -418,31 +416,32 @@
             font-size: 1.05rem;
         }
 
+        /* 👉 질문하신 플레이스홀더 글씨 조절 부분입니다! */
+        .memo-area::placeholder, 
+        .reflection-area::placeholder {
+            color: #64748b; /* 기존 #94a3b8 보다 진한 색상으로 변경 */
+            font-weight: 400; /* 글씨 진하기 추가 (400=보통, 600=조금 두껍게, 800=많이 두껍게) */
+            opacity: 1; 
+        }
+
         .memo-area { 
             flex: 1; border: none; background: transparent; resize: none; 
             font-size: 0.95rem; line-height: 1.8; outline: none; 
-            /* 은은한 가로선 유지 (청록색 계열) */
             background-image: linear-gradient(rgba(15, 118, 110, 0.25) 1px, transparent 1px); 
             background-size: 100% 1.8rem; cursor: text !important; font-family: 'Pretendard', sans-serif;
-            /* 텍스트 (소리 파일 스타일: #1d1d1f 딥 그레이/블랙) */
             color: #1d1d1f; 
-        }
-        .memo-area::placeholder, 
-        .reflection-area::placeholder {
-            color: #94a3b8; /* 밝은 회색 플레이스홀더 */
-            opacity: 1; 
         }
         
         .reflection-area { 
-            flex: 1; border: 1px solid rgba(255,255,255,0.8); border-radius: 14px; 
-            background: rgba(255,255,255,0.5); 
+            flex: 1; border: 1px solid rgba(255,255,255,0.9); border-radius: 14px; 
+            background: rgba(255, 255, 255, 0.85); 
             resize: none; padding: 15px; font-size: 0.9rem; line-height: 1.6; outline: none; margin-bottom: 12px; cursor: text !important; font-family: 'Pretendard', sans-serif; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
             transition: 0.3s; 
-            /* 텍스트 (소리 파일 스타일: #1d1d1f) */
             color: #1d1d1f;
         }
-        .reflection-area:focus { background: rgba(255,255,255,0.9); border-color: var(--teal-main); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); }
+        /* 클릭 시 완전한 흰색으로 변경 */
+        .reflection-area:focus { background: #ffffff; border-color: var(--teal-main); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); }
         
         .capture-tip { 
             font-size: 0.75rem; color: var(--teal-main); font-weight: 800; background: rgba(255,255,255,0.7); 
@@ -711,14 +710,14 @@
             </div>
         </div>
 
-        <aside class="sidebar-right">
+         <aside class="sidebar-right">
             <div class="memo-section">
                 <div class="sidebar-title">📌 학습 메모장</div>
-                <textarea class="memo-area" placeholder="중요한 내용을 기록하세요. 궁금한 사항은 기록하고 질문하세요."></textarea>
+                <textarea id="memoInput" class="memo-area" placeholder="중요한 내용을 기록하세요. 궁금한 사항은 기록하고 질문하세요."></textarea>
             </div>
             <div class="reflection-section">
                 <div class="sidebar-title">🌿 학습 활동 소감</div>
-                <textarea class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
+                <textarea id="reflectionInput" class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
                 <div class="capture-tip">📸 캡처: Win+Shift+S | Mac: Cmd+Shift+4</div>
             </div>
         </aside>
@@ -896,10 +895,31 @@
         }
         
         window.onload = function() {
+            // 단어장 랜덤 섞기
             const wordBank = document.querySelector('.word-bank');
             for (let i = wordBank.children.length; i >= 0; i--) {
                 wordBank.appendChild(wordBank.children[Math.random() * i | 0]);
             }
+
+            // LocalStorage 자동 저장 및 불러오기 (메모장 & 소감문)
+            const memoInput = document.getElementById('memoInput');
+            const reflectionInput = document.getElementById('reflectionInput');
+
+            // 1. 저장된 데이터 불러오기
+            if(localStorage.getItem('value_concept_memo')) {
+                memoInput.value = localStorage.getItem('value_concept_memo');
+            }
+            if(localStorage.getItem('value_concept_reflection')) {
+                reflectionInput.value = localStorage.getItem('value_concept_reflection');
+            }
+
+            // 2. 입력할 때마다 실시간 저장하기
+            memoInput.addEventListener('input', function() {
+                localStorage.setItem('value_concept_memo', this.value);
+            });
+            reflectionInput.addEventListener('input', function() {
+                localStorage.setItem('value_concept_reflection', this.value);
+            });
         };
     </script>
 </body>
