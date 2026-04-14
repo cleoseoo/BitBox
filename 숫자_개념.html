@@ -106,7 +106,7 @@
         
         .menu-link.active { 
             background-color: #e0f2fe !important; 
-            color: #005bb5 !important;           
+            color: #005bb5 !important;            
             font-weight: 900 !important; border-color: rgba(0,0,0,0.05);
             box-shadow: 0 -4px 12px rgba(0, 113, 227, 0.15) !important; 
         }
@@ -328,7 +328,7 @@
         .blank.correct { background: #e0f2fe; color: var(--ocean-blue); border: 2px solid var(--ocean-blue); box-shadow: none; }
         .blank:disabled { opacity: 1; cursor: default !important; }
 
-        /* ⭐ 사이드바 및 모달 */
+        /* ⭐ 사이드바 및 모달 (그림자 및 테마 교정) */
         .sidebar-right { 
             width: 360px; display: flex; flex-direction: column; flex-shrink: 0; 
             padding: 30px 0 35px 20px; 
@@ -337,32 +337,54 @@
         }
         
         .memo-section, .reflection-section { 
-            background: linear-gradient(135deg, rgba(224, 242, 254, 0.9) 0%, rgba(186, 230, 253, 0.8) 100%); 
+            /* 뽀얀 파스텔 블루 유리 질감 */
+            background: rgba(224, 242, 254, 0.65); 
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-radius: 28px 0 0 28px; 
-            border: 1px solid rgba(255, 255, 255, 0.8); 
+            border: 1px solid rgba(255, 255, 255, 0.7); 
             border-right: none; 
             padding: 25px 30px 25px 25px; 
             display: flex; flex-direction: column; 
-            box-shadow: inset 2px 2px 8px rgba(255,255,255,0.6), -10px 10px 30px rgba(14, 165, 233, 0.15); 
+            /* 푸른빛이 너무 튀지 않도록 깊고 차분한 그림자로 수정 */
+            box-shadow: inset 2px 2px 8px rgba(255,255,255,0.6), -10px 10px 30px rgba(0, 113, 227, 0.12); 
         }
         
         .memo-section { flex: 0.55; }
         .reflection-section { flex: 0.45; }
+
+        .sidebar-title {
+            font-weight: 900; 
+            color: #1e1e2f; 
+            margin-bottom: 12px; 
+            font-size: 1.05rem;
+        }
         
+        /* 플레이스홀더 진하기를 400으로 조절 */
+        .memo-area::placeholder, 
+        .reflection-area::placeholder {
+            color: #64748b;
+            font-weight: 400; 
+            opacity: 1; 
+        }
+
         .memo-area { 
             flex: 1; border: none; background: transparent; resize: none; font-size: 0.95rem; line-height: 1.8; outline: none; 
-            background-image: linear-gradient(rgba(14, 165, 233, 0.25) 1px, transparent 1px); 
+            background-image: linear-gradient(rgba(0, 113, 227, 0.25) 1px, transparent 1px); 
             background-size: 100% 1.8rem; cursor: text !important; font-family: 'Pretendard', sans-serif;
             color: #1d1d1f;
         }
+        
         .reflection-area { 
-            flex: 1; border: 1px solid rgba(255,255,255,0.9); border-radius: 14px; background: rgba(255,255,255,0.7); 
+            flex: 1; border: 1px solid rgba(255,255,255,0.9); border-radius: 14px; 
+            /* 소감문 배경 시인성 강화 (더 하얗게) */
+            background: rgba(255, 255, 255, 0.85); 
             resize: none; padding: 15px; font-size: 0.9rem; line-height: 1.6; outline: none; margin-bottom: 12px; cursor: text !important; font-family: 'Pretendard', sans-serif; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
             transition: 0.3s;
+            color: #1d1d1f;
         }
-        .reflection-area:focus { background: white; border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2); }
+        .reflection-area:focus { background: #ffffff; border-color: var(--apple-blue); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2); }
+        
         .capture-tip { 
             font-size: 0.75rem; color: var(--apple-blue); font-weight: 800; background: rgba(255,255,255,0.85); 
             padding: 8px; border-radius: 10px; border: 1px dashed var(--apple-blue); text-align: center; 
@@ -426,7 +448,7 @@
                     </div>
                 </div>
                 
-                <div id="step1-visual" class="step-container">
+                <div id="step1-visual" class="step-container active">
                     <div style="font-size: 1.3rem; font-weight: 900; color: #0071e3; margin-bottom: 15px; text-align: center;">전구를 켜서 숫자를 만들어보자!</div>
                     
                     <div class="visual-container">
@@ -713,12 +735,12 @@
 
         <aside class="sidebar-right">
             <div class="memo-section">
-                <div style="font-weight:900; color:#1e1e2f; margin-bottom:12px; font-size:1.05rem;">📌 학습 메모장</div>
-                <textarea class="memo-area" placeholder="중요한 내용을 기록하세요. 궁금한 사항은 기록하고 질문하세요."></textarea>
+                <div class="sidebar-title">📌 학습 메모장</div>
+                <textarea id="memoInput" class="memo-area" placeholder="중요한 내용을 기록하세요. 궁금한 사항은 기록하고 질문하세요."></textarea>
             </div>
             <div class="reflection-section">
-                <div style="font-weight:900; color:#1e1e2f; margin-bottom:12px; font-size:1.05rem;">🌿 학습 활동 소감</div>
-                <textarea class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
+                <div class="sidebar-title">🌿 학습 활동 소감</div>
+                <textarea id="reflectionInput" class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
                 <div class="capture-tip">📸 캡처: Win+Shift+S | Mac: Cmd+Shift+4</div>
             </div>
         </aside>
@@ -960,6 +982,28 @@
             const wordBank = document.querySelector('.word-bank');
             for (let i = wordBank.children.length; i >= 0; i--) {
                 wordBank.appendChild(wordBank.children[Math.random() * i | 0]);
+            }
+
+            // LocalStorage 자동 저장 및 불러오기 (숫자 개념 전용 키 사용)
+            const memoInput = document.getElementById('memoInput');
+            const reflectionInput = document.getElementById('reflectionInput');
+
+            if(memoInput && reflectionInput) {
+                // 1. 저장된 데이터 불러오기 (키값을 value_number_memo로 고유하게 설정)
+                if(localStorage.getItem('value_number_memo')) {
+                    memoInput.value = localStorage.getItem('value_number_memo');
+                }
+                if(localStorage.getItem('value_number_reflection')) {
+                    reflectionInput.value = localStorage.getItem('value_number_reflection');
+                }
+
+                // 2. 입력할 때마다 실시간 저장하기
+                memoInput.addEventListener('input', function() {
+                    localStorage.setItem('value_number_memo', this.value);
+                });
+                reflectionInput.addEventListener('input', function() {
+                    localStorage.setItem('value_number_reflection', this.value);
+                });
             }
         };
     </script>
