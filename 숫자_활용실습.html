@@ -86,12 +86,39 @@
         /* 주문판 */
         .order-display {
             background: #f0f9ff; border: 2px solid rgba(56, 189, 248, 0.3);
-            padding: 20px 80px; border-radius: 24px; margin-bottom: 35px;
+            padding: 20px 60px; border-radius: 24px; margin-bottom: 35px;
             text-align: center; width: 100%; max-width: 500px;
             box-shadow: 0 10px 25px rgba(56, 189, 248, 0.1);
+            position: relative;
         }
         .order-label { font-size: 1.05rem; font-weight: 900; color: var(--blue-main); margin-bottom: 5px; }
-        .target-num { font-size: 6rem; font-weight: 900; margin: 0; color: var(--text-main); line-height: 1.1; font-family: 'JetBrains Mono', monospace; }
+        .target-num { font-size: 6rem; font-weight: 900; margin: 0; color: var(--text-main); line-height: 1.1; font-family: 'JetBrains Mono', monospace; transition: 0.3s; }
+
+        /* ⭐ 새로 추가된 오븐 게이지 UI ⭐ */
+        .oven-gauge-wrap {
+            width: 100%; height: 24px; background: #e2e8f0; border-radius: 12px;
+            margin-top: 15px; overflow: hidden; position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .oven-gauge-fill {
+            height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue-light), var(--blue-main));
+            border-radius: 12px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+        }
+        .oven-gauge-fill.over { background: var(--apple-red); }
+        .gauge-text {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 900; color: #1e293b;
+            z-index: 2; text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+        }
+
+        /* ⭐ 특별 손님 (V.I.P) 및 콤보 텍스트 UI ⭐ */
+        .vip-guest { animation: vipPulse 1s infinite alternate; color: var(--gold-main) !important; }
+        @keyframes vipPulse { 
+            from { transform: scale(1); text-shadow: 0 0 10px rgba(217, 119, 6, 0.3); } 
+            to { transform: scale(1.1); text-shadow: 0 0 25px rgba(217, 119, 6, 0.7); } 
+        }
+        .combo-alert { font-size: 1.15rem; font-weight: 900; color: var(--apple-red); margin-bottom: 10px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         /* 2인용 분할 영역 */
         .coop-area { display: flex; width: 100%; justify-content: center; gap: 30px; margin-bottom: 30px; }
@@ -150,14 +177,16 @@
             font-size: 3.5rem;
             pointer-events: none; 
             z-index: 5000;
-            animation: popUp 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: popUpBread 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
         }
-        @keyframes popUp {
+        @keyframes popUpBread {
             0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
             50% { transform: translateY(-180px) scale(1.3) rotate(15deg); opacity: 1; }
             100% { transform: translateY(-120px) scale(1) rotate(30deg); opacity: 0; }
         }
+
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         /* 세련된 글래스모피즘 오버레이 */
         #overlay {
@@ -215,8 +244,14 @@
             </div>
 
             <div class="order-display" id="orderBox">
-                <div class="order-label">👨‍🍳 손님이 주문한 십진수!</div>
+                <div id="comboAlert" class="combo-alert" style="display:none;">🔥 3연속 콤보! V.I.P 손님 등장! 🔥</div>
+                <div class="order-label" id="orderLabel">👨‍🍳 손님이 주문한 십진수!</div>
                 <h2 class="target-num" id="targetText">?</h2>
+                
+                <div class="oven-gauge-wrap">
+                    <div class="gauge-text" id="gaugeText">반죽 부풀기 대기 중...</div>
+                    <div class="oven-gauge-fill" id="ovenGauge"></div>
+                </div>
             </div>
 
             <div class="coop-area">
@@ -252,19 +287,19 @@
         let currentSum = 0;
         let isPlaying = false;
         let timerId = null;
+        let comboCount = 0; // ⭐ 연속 정답을 기록하는 콤보 변수
 
         let highScore = localStorage.getItem('bitBakeryCoopScoreBlue') || 0;
         document.getElementById('highScore').innerText = highScore;
 
-        // 게임 종료 후 '다시 도전하기' 버튼을 눌렀을 때, 처음 오버레이(오븐 가동 시작) 화면으로 돌아가는 함수
         function resetToStart() {
-            // 변수 및 UI 초기화
             isPlaying = false;
             clearInterval(timerId);
             score = 0;
             timeLeft = 60;
             currentSum = 0;
             target = 0;
+            comboCount = 0; // 초기화 시 콤보 리셋
             
             document.getElementById('currentScore').innerText = score;
             document.getElementById('timerText').innerText = timeLeft;
@@ -275,8 +310,9 @@
                 b.classList.remove('active');
                 b.innerText = "0";
             });
+            
+            updateGauge(0, 0); // 게이지 초기화
 
-            // 오버레이 내용을 초기 설명 화면으로 되돌림
             const overlay = document.getElementById('overlay');
             overlay.innerHTML = `
                 <div style="font-size: 5rem; margin-bottom: 10px;">🍰🧁</div>
@@ -299,6 +335,7 @@
             isPlaying = true;
             score = 0;
             timeLeft = 60;
+            comboCount = 0;
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('currentScore').innerText = score;
             nextRound();
@@ -327,6 +364,53 @@
             if(key === 'L') toggleBit(document.getElementById('btn-1'), 1);
         });
 
+        // ⭐ 게이지 업데이트 함수 ⭐
+        function updateGauge(current, tgt) {
+            const gauge = document.getElementById('ovenGauge');
+            const text = document.getElementById('gaugeText');
+            
+            if (tgt === 0) {
+                // 특별 주문이 '0'일 때의 예외 처리
+                if (current === 0) {
+                    gauge.style.width = '100%';
+                    gauge.classList.remove('over');
+                    text.innerText = "전원 차단 완료!";
+                } else {
+                    gauge.style.width = '100%';
+                    gauge.classList.add('over'); // 전부 꺼야 하므로 켜져 있으면 경고(빨간색)
+                    text.innerText = "모든 전원을 차단하세요! (0 만들기)";
+                }
+                return;
+            }
+            
+            let pct = (current / tgt) * 100;
+            if (pct > 100) {
+                gauge.style.width = '100%';
+                gauge.classList.add('over');
+                text.innerText = "앗! 오븐 온도가 초과되었어요!";
+            } else {
+                gauge.style.width = pct + '%';
+                gauge.classList.remove('over');
+                text.innerText = `반죽 부푸는 중... (${Math.floor(pct)}%)`;
+                if(pct === 100) text.innerText = "빵 굽기 완료!";
+            }
+        }
+
+        // ⭐ 특정 값으로 비트 스위치를 강제로 켜는 함수 (V.I.P 0번 주문 시 사용) ⭐
+        function setBitsByValue(val) {
+            const btns = [
+                {id: 'btn-128', v: 128}, {id: 'btn-64', v: 64}, {id: 'btn-32', v: 32}, {id: 'btn-16', v: 16},
+                {id: 'btn-8', v: 8}, {id: 'btn-4', v: 4}, {id: 'btn-2', v: 2}, {id: 'btn-1', v: 1}
+            ];
+            btns.forEach(b => {
+                if((val & b.v) !== 0) {
+                    let el = document.getElementById(b.id);
+                    el.classList.add('active');
+                    el.innerText = "1";
+                }
+            });
+        }
+
         function toggleBit(btn, val) {
             if(!isPlaying) return;
             if(btn.classList.contains('active')) {
@@ -338,11 +422,16 @@
                 btn.innerText = "1";
                 currentSum += val;
             }
+            
             document.getElementById('sumText').innerText = currentSum;
-            if(currentSum === target) success();
+            updateGauge(currentSum, target); // 게이지 갱신
+
+            // 정답을 맞춘 경우 약간의 지연 후 다음 라운드로
+            if(currentSum === target) {
+                setTimeout(success, 100); 
+            }
         }
 
-        // 🌟 빵 터지는 시각 효과
         function popBread() {
             const breads = ['🍰', '🧁', '🥐', '🥖', '🥨', '🥞', '🧇', '🥯'];
             const popCount = Math.floor(Math.random() * 3) + 4; 
@@ -369,6 +458,7 @@
 
         function success() {
             score++;
+            comboCount++; // 정답 시 콤보 증가
             document.getElementById('currentScore').innerText = score;
             document.getElementById('gameCard').classList.add('success-flash');
             
@@ -381,20 +471,45 @@
         }
 
         function nextRound() {
-            // 난이도 밸런싱
-            if (Math.random() > 0.3) {
-                target = Math.floor(Math.random() * 128) + 1; // 1~128
-            } else {
-                target = Math.floor(Math.random() * 255) + 1; // 1~255
-            }
-            
-            document.getElementById('targetText').innerText = target;
-            currentSum = 0;
             document.getElementById('sumText').innerText = "0";
             document.querySelectorAll('.bit-btn').forEach(b => {
                 b.classList.remove('active');
                 b.innerText = "0";
             });
+            currentSum = 0;
+
+            // ⭐ 3콤보 달성 시 V.I.P 로직 트리거 ⭐
+            if (comboCount >= 3) {
+                comboCount = 0; // 콤보 초기화
+                target = Math.random() > 0.5 ? 0 : 255; // 0 또는 255 생성
+                
+                // VIP 전용 UI 효과 켜기
+                document.getElementById('targetText').classList.add('vip-guest');
+                document.getElementById('comboAlert').style.display = 'block';
+                document.getElementById('orderLabel').innerText = "👑 V.I.P 손님의 특별 주문!";
+                
+                if (target === 0) {
+                    // 목표가 0일 때, 유저가 바로 통과하지 못하도록 임의의 스위치를 켜둠
+                    let randomStart = Math.floor(Math.random() * 254) + 1; // 1~254 사이
+                    setBitsByValue(randomStart);
+                    currentSum = randomStart;
+                }
+            } else {
+                // 일반 로직
+                document.getElementById('targetText').classList.remove('vip-guest');
+                document.getElementById('comboAlert').style.display = 'none';
+                document.getElementById('orderLabel').innerText = "👨‍🍳 손님이 주문한 십진수!";
+                
+                if (Math.random() > 0.3) {
+                    target = Math.floor(Math.random() * 127) + 1; // 1~127
+                } else {
+                    target = Math.floor(Math.random() * 254) + 1; // 1~254 (255는 VIP 전용으로 유지)
+                }
+            }
+            
+            document.getElementById('targetText').innerText = target;
+            document.getElementById('sumText').innerText = currentSum;
+            updateGauge(currentSum, target); // 초기 게이지 세팅
         }
 
         function endGame() {
