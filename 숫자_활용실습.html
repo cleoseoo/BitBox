@@ -36,7 +36,8 @@
             display: flex; flex-direction: column; overflow: hidden;
             transition: box-shadow 0.3s ease;
             position: relative;
-        }
+        padding-top: 46px;
+    }
         
         /* 은은한 도트 패턴을 배경에 깔아 깊이감 추가 */
         body::before {
@@ -214,6 +215,53 @@
     </style>
 </head>
 <body id="gameBody">
+<!-- ✅ DATA BITBOX 공통 네비바 -->
+<style>
+#dbb-topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 22px;
+    background: rgba(255,255,255,0.13);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #0071e355;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.18);
+    font-family: 'Noto Sans KR','Pretendard','Inter',sans-serif;
+    box-sizing: border-box;
+}
+#dbb-topnav a.dbb-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
+    text-decoration: none;
+    padding: 6px 14px; border-radius: 20px;
+    border: 1.5px solid #0071e377;
+    color: #0071e3;
+    background: rgba(0,113,227,0.12);
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+#dbb-topnav a.dbb-btn:hover {
+    background: #0071e322;
+    border-color: #0071e3;
+    box-shadow: 0 0 14px #0071e344;
+    transform: translateY(-1px);
+}
+#dbb-topnav .dbb-title {
+    font-size: 0.78rem; font-weight: 700;
+    color: #0071e3;
+    letter-spacing: 0.3px;
+    opacity: 0.9;
+}
+
+</style>
+<div id="dbb-topnav">
+    <div style="display:flex;gap:9px;align-items:center;">
+        <a class="dbb-btn" href="index.html">← 메인으로</a>
+        <a class="dbb-btn" href="숫자_개념.html">📖 개념으로</a>
+    </div>
+    <span class="dbb-title">🎮 숫자의 디지털 표현 · 활용 실습</span>
+</div>
+<!-- /네비바 -->
+
 
     <header>
         <div class="header-title">👨‍🍳 비트 베이커리 <span style="font-size:0.9rem; font-weight:700; color:#94a3b8; margin-left:10px;">숫자의 디지털 표현</span></div>
