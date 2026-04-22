@@ -366,12 +366,9 @@
         .submit-quiz-btn { background: var(--success-green); color: white; border: none; border-radius: 14px; padding: 15px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: 0.2s; margin-top: 20px; display: inline-block;}
         .submit-quiz-btn:hover { transform: translateY(-2px); background: #059669; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
 
-        .word-score-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; width: 100%; }
-        
         .word-bank { background: #f0fdfa; border: 1px solid rgba(15, 118, 110, 0.2); padding: 15px 25px; border-radius: 18px; display: flex; gap: 15px; flex: 1; justify-content: center; flex-wrap: wrap; transition: 0.3s; }
         .word-item { background: white; padding: 6px 16px; border-radius: 10px; font-weight: 900; color: var(--teal-main); font-size: 0.95rem; border: 1px solid rgba(15, 118, 110, 0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s;}
         
-        /* 퀴즈가 시작되었을 때만 커서 조작 가능 */
         .quiz-active .word-item { cursor: grab !important; }
         .quiz-active .word-item:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(15, 118, 110, 0.15); border-color: var(--teal-main); }
         .quiz-active .word-item:active { cursor: grabbing !important; }
@@ -631,9 +628,9 @@
     </div>
     
     <div class="modal-overlay" id="customAlertModal" style="z-index: 9999;">
-        <div class="modal-box alert-box">
+        <div class="alert-box">
             <div style="font-size: 3rem; margin-bottom: 10px;">🚫</div>
-            <h3 id="alertTitle" style="color: var(--apple-red); font-weight: 900; font-size: 1.5rem; margin-top: 0; margin-bottom: 15px;">접근 거부!</h3>
+            <h3 id="alertTitle" style="color: var(--apple-red); font-size: 1.5rem; margin-top: 0; margin-bottom: 15px; font-weight: 900;">접근 거부!</h3>
             <p id="alertMessage" class="alert-message"></p>
             <button onclick="closeCustomAlert()" style="width: 100%; padding: 12px; background: var(--apple-red); color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer;">확인</button>
         </div>
@@ -677,7 +674,7 @@
             if(inputVal === secretCode) {
                 const overlay = document.getElementById('lockOverlay');
                 overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.display = 'none'; }, 500); 
+                setTimeout(() => { overlay.style.display = 'none'; document.getElementById('lockInput').blur(); }, 500); 
             } else {
                 // 기존 브라우저 alert 대신 커스텀 팝업 사용
                 showCustomAlert("접근 거부!", `힌트: 오늘 날짜(${today}일)를 이진수로 변환해 보세요.`);
@@ -769,13 +766,29 @@
             }
         }
 
-        // ⭐ 퀴즈 타이머 및 진행 로직 ⭐
+// ⭐ 퀴즈 타이머 및 진행 로직 ⭐
         let timerInterval;
         let elapsedSeconds = 0;
         let isQuizStarted = false;
         let score = 0;
         let correctAnswers = 0; 
         const scored = new Set();
+
+        // ✨ [메인 연동] 현재 스텝 번호 및 합격 기준 점수 설정
+        const THIS_STEP = 2; // 비트 개념은 2단계
+        const PASS_SCORE = 70; // 70점 이상이면 완료 처리
+
+        // ✨ [메인 연동] 로컬 스토리지에 완료 상태 저장 함수
+        function markStepDone(finalScore) {
+            if (finalScore < PASS_SCORE) return; // 70점 미만이면 저장 안 함
+            try {
+                const done = JSON.parse(localStorage.getItem('completedSteps') || '[]');
+                if (!done.includes(THIS_STEP)) {
+                    done.push(THIS_STEP);
+                    localStorage.setItem('completedSteps', JSON.stringify(done));
+                }
+            } catch(e) { console.warn('저장 실패:', e); }
+        }
 
         function startQuizTimer() {
             isQuizStarted = true;
@@ -867,10 +880,13 @@
             document.getElementById('modalOverlay').style.display = 'flex';
         }
 
+        // ⭐ 팝업창 정보 업데이트 (저장 버튼 제거 및 심플화) ⭐
         function showSuccess() {
             const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
             const s = String(elapsedSeconds % 60).padStart(2, '0');
             const finalScore = score; 
+
+            markStepDone(finalScore);
 
             const content = document.getElementById('modalContent');
             content.innerHTML = `
@@ -882,19 +898,20 @@
                     <p style="margin:5px 0; font-size:1.1rem; font-weight:800;">풀이 시간: <span style="color:var(--teal-main); font-size:1.3rem;">${m}분 ${s}초</span></p>
                 </div>
 
-                <p style="font-size:0.95rem; color:#555; margin-bottom:20px;">컴퓨터 정보의 최소 단위인 비트의 비밀을 풀었습니다!<br>아래 버튼을 눌러 <b>수업 결과 리포트</b>를 저장하세요.</p>
+                <p style="font-size:0.95rem; color:#555; margin-bottom:20px;">비트의 개념을 탐구했습니다!!<br>창을 닫고 우측 하단의 버튼을 눌러 리포트를 저장하세요.</p>
                 
-                <div style="display:flex; gap:10px;">
-                    <button onclick="downloadReportHTML()" style="flex:1; padding:14px; background:var(--teal-main); color:white; border:none; border-radius:12px; font-weight:900; cursor:pointer; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3);">📄 리포트 저장 (웹문서)</button>
-                    <button onclick="closeModal()" style="padding:14px 20px; background:#e5e5e7; color:#333; border:none; border-radius:12px; font-weight:700; cursor:pointer;">닫기</button>
-                </div>
+                <button onclick="closeModal()" style="width:100%; padding:14px; background:var(--teal-main); color:white; border:none; border-radius:12px; font-weight:700; font-size:1.1rem; cursor:pointer;">확인 및 닫기</button>
             `;
             document.getElementById('modalOverlay').style.display = 'flex';
-            setStatus('done'); 
+            if(finalScore >= PASS_SCORE) {
+                setStatus('done'); 
+            }
         }
 
         function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
         
+        // ⭐ HTML 양식으로 수업 리포트 다운로드 기능 ⭐
         function downloadReportHTML() {
             const finalScore = score;
             const memo = document.getElementById('memoInput').value || "작성된 내용이 없습니다.";
@@ -1086,26 +1103,30 @@
 
         window.onload = function() {
             const wordBank = document.querySelector('.word-bank');
-            for (let i = wordBank.children.length; i >= 0; i--) {
-                wordBank.appendChild(wordBank.children[Math.random() * i | 0]);
+            if(wordBank) {
+                for (let i = wordBank.children.length; i >= 0; i--) {
+                    wordBank.appendChild(wordBank.children[Math.random() * i | 0]);
+                }
             }
 
             const memoInput = document.getElementById('memoInput');
             const reflectionInput = document.getElementById('reflectionInput');
 
-            if(localStorage.getItem('value_bit_memo')) {
-                memoInput.value = localStorage.getItem('value_bit_memo');
-            }
-            if(localStorage.getItem('value_bit_reflection')) {
-                reflectionInput.value = localStorage.getItem('value_bit_reflection');
-            }
+            if(memoInput && reflectionInput) {
+                if(localStorage.getItem('value_bit_memo')) {
+                    memoInput.value = localStorage.getItem('value_bit_memo');
+                }
+                if(localStorage.getItem('value_bit_reflection')) {
+                    reflectionInput.value = localStorage.getItem('value_bit_reflection');
+                }
 
-            memoInput.addEventListener('input', function() {
-                localStorage.setItem('value_bit_memo', this.value);
-            });
-            reflectionInput.addEventListener('input', function() {
-                localStorage.setItem('value_bit_reflection', this.value);
-            });
+                memoInput.addEventListener('input', function() {
+                    localStorage.setItem('value_bit_memo', this.value);
+                });
+                reflectionInput.addEventListener('input', function() {
+                    localStorage.setItem('value_bit_reflection', this.value);
+                });
+            }
         };
 // 🔥 엔터키로 경고 팝업창 닫기 기능 추가
         window.addEventListener('keydown', function(e) {
