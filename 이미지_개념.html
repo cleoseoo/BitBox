@@ -130,22 +130,6 @@
             flex-shrink: 0; margin-bottom: 40px; 
         }
 
-        /* 비밀번호 잠금 화면 */
-        .lock-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); border-radius: 28px;
-            z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-main); transition: opacity 0.5s ease;
-        }
-        .lock-box { background: rgba(255,255,255,0.9); padding: 40px 50px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.8); text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .lock-icon { font-size: 3.5rem; margin-bottom: 15px; animation: floatLock 3s ease-in-out infinite; }
-        @keyframes floatLock { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
-        .lock-input { padding: 12px 20px; font-size: 1.5rem; font-weight: 900; border-radius: 12px; border: 2px solid #dfe6e9; outline: none; text-align: center; margin-top: 20px; width: 180px; font-family: 'JetBrains Mono', monospace; background: #fff; color: var(--multi-violet); transition: 0.3s; }
-        .lock-input:focus { border-color: var(--multi-violet); box-shadow: 0 0 15px rgba(108, 92, 231, 0.2); }
-        .lock-btn { padding: 12px 25px; font-size: 1.1rem; font-weight: 900; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--multi-violet), #a29bfe); color: white; margin-top: 20px; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
-        .lock-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6); }
-
         /* ⭐ 스텝 컨테이너 재배치 */
         .step-container { width: 100%; transition: opacity 0.4s ease, transform 0.4s ease; display: none; opacity: 0; transform: translateX(20px); flex: 1; flex-direction: column; }
         .step-container.active { display: flex; opacity: 1; transform: translateX(0); }
@@ -322,13 +306,8 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(8px); z-index: 9000; align-items: center; justify-content: center; }
         
         /* 팝업 가로폭 680px 적용 */
-        .modal-content { background: white; padding: 40px; border-radius: 28px; width: 680px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.15); animation: popUp 0.3s ease-out;}
+        
         @keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* ⭐ 커스텀 에러 알림창 전용 스타일 ⭐ */
-       .alert-box { background: white; border-radius: 28px; border: 2px solid var(--apple-red) !important; width: 400px; box-shadow: 0 0 30px rgba(239, 68, 68, 0.3) !important; padding: 30px 27px; text-align: center; animation: popUp 0.3s ease-out;}
-        .alert-box h3 { color: var(--apple-red); font-size: 1.5rem; margin-top: 0; margin-bottom: 15px; font-weight: 900; }
-        .alert-message { color: var(--text-main); font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; word-break: keep-all; font-weight: 600; }
 
         /* ⭐ 미션 가이드 버튼 (네모 -> 라운드 애니메이션 적용) ⭐ */
         .inline-tip { 
@@ -381,7 +360,22 @@
         .img-report-btn div { color: white !important; }
         .img-report-btn:hover { background: linear-gradient(135deg, var(--multi-violet-dark), var(--multi-violet)); color: white; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4); }
 
-    </style>
+        /* ⭐ 퀴즈 보기 고정 (sticky) */
+        .word-score-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: inherit;
+            padding: 10px 0 5px 0;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    
+        .modal-content { background: white; padding: 32px 28px; border-radius: 28px; width: 400px; max-width: 92vw; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.15); animation: popUp 0.3s ease-out; }
+        .erase-section { background: rgba(255,255,255,0.5); border-radius: 28px 0 0 28px; border: 1px solid rgba(239,68,68,0.15); border-right: none; padding: 14px 20px 14px 18px; display: flex; align-items: center; }
+        .erase-btn { flex:1; background: transparent; border: 1.5px solid rgba(239,68,68,0.3); color: rgba(239,68,68,0.7); border-radius: 12px; padding: 9px 14px; font-size: 0.8rem; font-weight: 800; cursor: pointer !important; transition: all 0.2s ease; font-family: 'Pretendard','Inter',sans-serif; line-height: 1.4; text-align: center; }
+        .erase-btn:hover { background: #fef2f2; border-color: #ef4444; color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.12); }
+</style>
 </head>
 <body>
 
@@ -421,20 +415,6 @@
         <div class="content-container">
             <div class="content-card">
 
-                <div class="lock-overlay" id="lockOverlay">
-                    <div class="lock-box">
-                        <div class="lock-icon">🔒</div>
-                        <h2 style="margin: 0 0 10px 0; color: var(--text-main); font-weight: 900;">암호를 풀어라!</h2>
-                        <p style="font-size: 0.95rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.6; font-weight: 600;">
-                             '이미지' 데이터 비트박스를 열려면<br>
-                            <b style="color:var(--multi-pink)">오늘 날짜(일)를 이진수로 변환</b>하여 입력하세요!
-                        </p>
-                        <input type="text" id="lockInput" class="lock-input" placeholder="예: 101" onkeypress="if(event.key==='Enter') checkPassword()" autocomplete="off">
-                        <br>
-                        <button class="lock-btn" onclick="checkPassword()">보안 시스템 해제</button>
-                    </div>
-                </div>
-
                 <div id="step1-visual" class="step-container active">
                     <div class="slide-section">
                         <div class="visual-title">💡 컴퓨터는 복잡한 스마트 시티를 어떻게 기억할까?</div>
@@ -459,14 +439,14 @@
 
                     <div class="step-navigation">
                         <div class="nav-arrow next" onclick="goStep('step2-concept')">
-                            <div>개념 탐구 (픽셀과 해상도)</div>
+                            <div>개념 탐구 (디지털 이미지 구성 원리)</div>
                             <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"/></svg>
                         </div>
                     </div>
                 </div>
 
                 <div id="step2-concept" class="step-container">
-                    <div style="font-size: 1.3rem; font-weight: 900; color: var(--multi-violet); margin-bottom: 10px; text-align: left; padding-left: 10px;">디지털 이미지를 구성하는 원리</div>
+                    <div style="font-size: 1.3rem; font-weight: 900; color: var(--multi-violet); margin-bottom: 10px; text-align: left; padding-left: 10px;">? 디지털 이미지를 구성하는 원리</div>
                     <div class="concept-wrap">
                         <div class="concept-row">
                             <div class="concept-icon">🔳</div>
@@ -474,7 +454,7 @@
                                 <button class="inline-reveal-btn" onclick="revealInline(this, '픽셀 (Pixel)', '#e84393')">❓ 확인</button> : 디지털 화면을 구성하는 가장 작은 사각형 점 단위입니다. (화소라고도 부릅니다.)
                             </div>
                         </div>
- <div class="concept-row">
+                        <div class="concept-row">
                             <div class="concept-icon">📐</div>
                             <div class="concept-text">
                                 <button class="inline-reveal-btn" onclick="revealInline(this, '해상도 (Resolution)', '#e84393')">❓ 확인</button> : 이미지 하나가 몇 개의 픽셀로 이루어져 있는지를 나타내는 정밀도입니다. (예: 1920x1080)
@@ -570,7 +550,7 @@
                             </div>
 
                             <div id="hdUI" style="display: none; width: 100%; height: auto; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
-                                <div style="width:300px; height:300px; border:4px solid white; border-radius:8px; box-shadow:0 10px 20px rgba(0,0,0,0.05); background-color:#ffffff; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M 20 0 L 0 0 0 20' fill='none' stroke='%23d8d8e8' stroke-width='1'/%3E%3C/svg%3E"); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                                <div style="width:300px; height:300px; border:4px solid white; border-radius:8px; box-shadow:0 10px 20px rgba(0,0,0,0.05); background-color:#ffffff; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M 20 0 L 0 0 0 20' fill='none' stroke='%23d8d8e8' stroke-width='1'/%3E%3C/svg%3E&quot;); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
                                     <canvas id="leftHdCanvas" width="300" height="300" style="width:100%; height:100%;"></canvas>
                                 </div>
                                 <p style="color:#6c5ce7; font-size: 0.85rem; font-weight: 800; background:#f8f6ff; padding:8px 16px; border-radius:20px; border:1px solid rgba(108,92,231,0.2); margin:0; text-align:center; line-height:1.6;">📌 원본 (300 × 300px 비트맵)</p>
@@ -762,7 +742,7 @@
                         </div>
                     </div>
 
-                    <div class="word-score-container" style="margin-bottom: 20px;">
+                    <div class="word-score-container" id="wordBankWrap">
                         <div class="word-bank" id="wordBank" style="opacity: 0.4; pointer-events: none;">
                             <div class="word-item" draggable="true" ondragstart="drag(event)">픽셀</div>
                             <div class="word-item" draggable="true" ondragstart="drag(event)">비트맵</div>
@@ -816,6 +796,12 @@
                 <textarea id="reflectionInput" class="reflection-area" placeholder="새롭게 알게된 사실과 느낀점을 기록하세요."></textarea>
                 <div class="capture-tip">📸 캡처: Win+Shift+S | Mac: Cmd+Shift+4</div>
             </div>
+            <div class="erase-section">
+                <button class="erase-btn" onclick="eraseStepContent()">
+                    🗑️ 이 단원 학습 내용 지우기<br>
+                    <span style="font-size:0.68rem; font-weight:600; opacity:0.7;">(메모·소감·퀴즈 기록)</span>
+                </button>
+            </div>
         </aside>
     </main>
 
@@ -823,15 +809,6 @@
         <div class="modal-content" id="modalContent"></div>
     </div>
     
-    <div class="modal-overlay" id="customAlertModal" style="z-index: 9999;">
-        <div class="modal-box alert-box">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🚫</div>
-            <h3 id="alertTitle" style="color: var(--apple-red); font-weight: 900; font-size: 1.5rem; margin-top: 0; margin-bottom: 15px;">접근 거부!</h3>
-            <p id="alertMessage" class="alert-message"></p>
-            <button onclick="closeCustomAlert()" style="width: 100%; padding: 12px; background: var(--apple-red); color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 1.1rem; cursor: pointer;">확인</button>
-        </div>
-    </div>
-
     <footer>
         <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
@@ -850,66 +827,14 @@
             document.body.className = ''; 
             if(status === 'help') document.body.classList.add('status-help');
             if(status === 'done') document.body.classList.add('status-done');
+            // ✨ [메인 연동] 상태 localStorage 저장
+            try {
+                if(status === 'normal') localStorage.removeItem('status_step' + (typeof THIS_STEP !== 'undefined' ? THIS_STEP : ''));
+                else localStorage.setItem('status_step' + (typeof THIS_STEP !== 'undefined' ? THIS_STEP : ''), status);
+            } catch(e) {}
         }
 
-        const today = new Date().getDate(); 
-        const secretCode = today.toString(2); 
-        
-        // ⭐ 커스텀 알림(Alert) 로직 
-        function showCustomAlert(title, message) {
-            document.getElementById('alertTitle').innerText = title;
-            document.getElementById('alertMessage').innerHTML = message;
-            document.getElementById('customAlertModal').style.display = 'flex';
-        }
-        function closeCustomAlert() {
-            document.getElementById('customAlertModal').style.display = 'none';
-            document.getElementById('lockInput').focus();
-        }
-
-        function checkPassword() {
-            const inputVal = document.getElementById('lockInput').value.trim();
-            if(inputVal === secretCode) {
-                const overlay = document.getElementById('lockOverlay');
-                overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.display = 'none'; document.getElementById('lockInput').blur(); }, 500); 
-            } else {
-                showCustomAlert("접근 거부!", `힌트: 오늘 날짜(${today}일)를 이진수로 변환해 보세요.`);
-                document.getElementById('lockInput').value = '';
-            }
-        }
-
-        // 스텝 이동
-        function goStep(id) {
-            const current = document.querySelector('.step-container.active');
-            const next = document.getElementById(id);
-            if(current === next) return;
-
-            current.style.opacity = '0'; 
-            
-            const currentNum = parseInt(current.id.match(/\d+/)[0]);
-            const nextNum = parseInt(id.match(/\d+/)[0]);
-            
-            current.style.transform = (nextNum > currentNum) ? 'translateX(-20px)' : 'translateX(20px)';
-            
-            setTimeout(() => {
-                current.classList.remove('active'); next.classList.add('active');
-                
-                if(id === 'step3-advanced' && currentMode === 'custom') {
-                    makeGrid(); 
-                } else if(id === 'step3-advanced' && currentMode === 'hd') {
-                    drawAppleOnLeft();
-                    updateResultCanvas();
-                } else if(id === 'step4-bitmap') {
-                    setBitDepth(currentBitDepth); 
-                } else if(id === 'step5-vector') {
-                    updateVector(); 
-                }
-
-                setTimeout(() => { next.style.opacity = '1'; next.style.transform = 'translateX(0)'; }, 50);
-            }, 400); 
-        }
-
-       function revealInline(btn, text, color = 'var(--teal-main)') {
+        function revealInline(btn, text, color = 'var(--teal-main)') {
             const span = document.createElement('span');
             span.className = 'pop-anim revealed-text'; 
             span.style.color = color;
@@ -1064,6 +989,36 @@
         });
         wrapper.addEventListener('mouseleave', () => { isMag = false; lCanvas.style.display = 'none'; });
 
+        // 스텝 이동
+        function goStep(id) {
+            const current = document.querySelector('.step-container.active');
+            const next = document.getElementById(id);
+            if(current === next) return;
+
+            current.style.opacity = '0'; 
+            
+            const currentNum = parseInt(current.id.match(/\d+/)[0]);
+            const nextNum = parseInt(id.match(/\d+/)[0]);
+            
+            current.style.transform = (nextNum > currentNum) ? 'translateX(-20px)' : 'translateX(20px)';
+            
+            setTimeout(() => {
+                current.classList.remove('active'); next.classList.add('active');
+                
+                if(id === 'step3-advanced' && currentMode === 'custom') {
+                    makeGrid(); 
+                } else if(id === 'step3-advanced' && currentMode === 'hd') {
+                    drawAppleOnLeft();
+                    updateResultCanvas();
+                } else if(id === 'step4-bitmap') {
+                    setBitDepth(currentBitDepth); 
+                } else if(id === 'step5-vector') {
+                    updateVector(); 
+                }
+
+                setTimeout(() => { next.style.opacity = '1'; next.style.transform = 'translateX(0)'; }, 50);
+            }, 400); 
+        }
 
         // --- 실습 패널 (해상도, 비트맵, 벡터) ---
         let gridData = []; 
@@ -1387,6 +1342,24 @@
         const totalQuestions = 6; 
         const scored = new Set();
 
+        // ✨ [메인 연동] 현재 스텝 번호 및 합격 기준 점수 설정
+        const THIS_STEP = 5; // 이미지_개념은 5단계
+        const PASS_SCORE = 70; // 70점 이상이면 완료 처리
+
+        // ✨ [메인 연동] 로컬 스토리지에 완료 상태 저장 함수
+        function markStepDone(finalScore) {
+            if (finalScore < PASS_SCORE) return;
+            try {
+                const done = JSON.parse(localStorage.getItem('completedSteps') || '[]');
+                if (!done.includes(THIS_STEP)) {
+                    done.push(THIS_STEP);
+                    localStorage.setItem('completedSteps', JSON.stringify(done));
+                }
+                localStorage.setItem('score_step' + THIS_STEP, finalScore);
+                localStorage.setItem('score_step' + THIS_STEP + '_date', new Date().toLocaleDateString('ko-KR'));
+            } catch(e) { console.warn('저장 실패:', e); }
+        }
+
         function startQuizTimer() {
             isQuizStarted = true;
             document.getElementById('startQuizBtn').style.display = 'none';
@@ -1475,7 +1448,10 @@
         function showSuccess() {
             const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
             const s = String(elapsedSeconds % 60).padStart(2, '0');
-            const finalScore = score; 
+            const finalScore = score;
+
+            // ✨ [메인 연동] 70점 이상이면 completedSteps에 저장 → index.html 진행률 바 반영
+            markStepDone(finalScore);
 
             const content = document.getElementById('modalContent');
             content.innerHTML = `
@@ -1539,11 +1515,11 @@
                         <p>▶ 퀴즈 풀이 시간: <span class="highlight">${timeStr}</span></p>
                     </div>
                     <div class="section">
-                        <h2>📌 학습 메모장</h2>
+                        <h2>📌 배움 노트</h2>
                         <div class="text-box">${memo}</div>
                     </div>
                     <div class="section">
-                        <h2>🌿 학습 활동 소감</h2>
+                        <h2>🌿 배움 활동 소감</h2>
                         <div class="text-box">${reflection}</div>
                     </div>
                     <div class="footer">본 리포트는 '데이터 비트박스' 시스템에서 자동 생성되었습니다.</div>
@@ -1688,6 +1664,17 @@
         }
 
         window.onload = function() {
+            // ✨ [메인 연동] 저장된 상태 복원
+            try {
+                const savedStatus = localStorage.getItem('status_step' + THIS_STEP);
+                if(savedStatus) document.body.classList.add('status-' + savedStatus);
+                const done = JSON.parse(localStorage.getItem('completedSteps') || '[]');
+                if(done.includes(THIS_STEP)) {
+                    const activeMenu = document.querySelector('.menu-link.active');
+                    if(activeMenu) activeMenu.textContent += ' ✓';
+                }
+            } catch(e) {}
+
             const wordBank = document.querySelector('.word-bank');
             if(wordBank) {
                 for (let i = wordBank.children.length; i >= 0; i--) {
@@ -1714,20 +1701,8 @@
                 });
             }
         };
-// 🔥 엔터키로 경고 팝업창 닫기 기능 추가
-        window.addEventListener('keydown', function(e) {
-            // 팝업창 요소 찾기 (파일마다 ID가 조금 다를 수 있어 두 가지 모두 체크)
-            const alertOverlay = document.getElementById('customAlertModal') || document.getElementById('customAlertOverlay');
-            
-            // 팝업창이 화면에 떠 있는 상태(flex)일 때 엔터키를 누르면
-            if (alertOverlay && alertOverlay.style.display === 'flex') {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // 기본 엔터 동작 방지
-                    closeCustomAlert(); // 팝업 닫기 함수 실행
-                }
-            }
-        });
-// 🔥 아이패드/태블릿 터치 드로잉 지원 (기존 코드 100% 보존)
+
+        // 🔥 아이패드/태블릿 터치 드로잉 지원 (기존 코드 100% 보존)
         const gridContainerBox = document.getElementById('gridContainer');
         if (gridContainerBox) {
             // 손가락이 닿은 상태로 움직일 때 (드래그 칠하기)
@@ -1758,6 +1733,53 @@
                 }
             }, { passive: false });
         }
+
+        function eraseStepContent() {
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div style="font-size:2.2rem; margin-bottom:10px;">🗑️</div>
+                <h3 style="color:#ef4444; margin-bottom:10px; font-size:1.2rem; font-weight:900;">이 단원 학습 내용 지우기</h3>
+                <p style="font-size:0.9rem; color:#555; line-height:1.9; margin-bottom:22px; text-align:left; padding:0 4px; word-break:keep-all;">
+                    아래 내용이 모두 삭제됩니다.<br>
+                    <span style="color:#ef4444;">• 퀴즈 점수 및 완료 기록<br>
+                    • 배움 노트 내용<br>
+                    • 배움 활동 소감 내용<br>
+                    • SOS·미션 완료 테두리 상태</span>
+                </p>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="closeModal()" style="flex:1; padding:11px; background:#f1f5f9; color:#64748b; border:none; border-radius:12px; font-weight:700; font-size:0.95rem; cursor:pointer;">취소</button>
+                    <button onclick="doEraseContent()" style="flex:1; padding:11px; background:#ef4444; color:white; border:none; border-radius:12px; font-weight:700; font-size:0.95rem; cursor:pointer;">지우기</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function doEraseContent() {
+            try {
+                localStorage.removeItem('score_step' + THIS_STEP);
+                localStorage.removeItem('score_step' + THIS_STEP + '_date');
+                const done = JSON.parse(localStorage.getItem('completedSteps') || '[]');
+                localStorage.setItem('completedSteps', JSON.stringify(done.filter(s => s !== THIS_STEP)));
+                localStorage.removeItem('value_image_memo');
+                localStorage.removeItem('value_image_reflection');
+                localStorage.removeItem('status_step' + THIS_STEP);
+                document.getElementById('memoInput').value = '';
+                document.getElementById('reflectionInput').value = '';
+                resetQuiz();
+                setStatus('normal');
+                const activeMenu = document.querySelector('.menu-link.active');
+                if (activeMenu && activeMenu.textContent.endsWith(' ✓')) {
+                    activeMenu.textContent = activeMenu.textContent.replace(' ✓', '');
+                }
+            } catch(e) {}
+            document.getElementById('modalContent').innerHTML = `
+                <div style="font-size:2.2rem; margin-bottom:10px;">✅</div>
+                <h3 style="margin-bottom:10px; font-size:1.2rem; font-weight:900;">삭제 완료!</h3>
+                <p style="font-size:0.9rem; color:#555; margin-bottom:18px;">이 단원의 학습 내용이 모두 삭제되었습니다.</p>
+                <button onclick="closeModal()" style="width:100%; padding:11px; color:white; border:none; border-radius:12px; font-weight:700; font-size:0.95rem; cursor:pointer; background:#10b981;">확인</button>
+            `;
+        }
+
     </script>
 </body>
 </html>
