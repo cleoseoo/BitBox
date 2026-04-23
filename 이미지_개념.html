@@ -484,7 +484,7 @@
                         <div class="concept-row">
                             <div class="concept-icon">🎨</div>
                             <div class="concept-text">
-                                <b>RGB 색상</b> : 빛의 삼원색(Red, Green, Blue)을 조합하여 색을 표현합니다. 하나의 픽셀 색상을 저장하는 데 보통 <button class="inline-reveal-btn green" onclick="revealInline(this, '24비트 (약 1600만 색)', '#2e7d32')">❓ 확인</button>를 사용합니다.
+                                <b>RGB 색상</b> : 빛의 삼원색(Red-8비트, Green-8비트, Blue-8비트)을 조합하여 색을 표현합니다. 하나의 픽셀 색상을 저장하는 데 보통 <button class="inline-reveal-btn green" onclick="revealInline(this, '24비트 (약 1600만 색)', '#2e7d32')">❓ 확인</button>를 사용합니다.
                             </div>
                         </div>
                     </div>
@@ -907,7 +907,7 @@
                     for(let j=y+35; j<y+h-15; j+=20) { sCtx.fillRect(i, j, 12, 12); }
                 }
             }
-            drawBldg(50, 90, 120, 90, "#e17055", "#0984e3", "POLICE 🚨"); 
+            drawBldg(50, 90, 120, 90, "#e17055", "#0984e3", "HOSPITAL 🚨"); 
             drawBldg(440, 90, 120, 90, "#74b9ff", "#0984e3", "POLICE 🚨"); 
             drawBldg(50, 270, 120, 90, "#ffeaa7", "#fdcb6e", "SCHOOL 🏫");
             drawBldg(440, 270, 120, 90, "#81ecec", "#00cec9", "MART 🛒");
